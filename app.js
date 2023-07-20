@@ -128,7 +128,7 @@ app.listen(4000, () => {
 
 // GET: Lấy danh sách người dùng -> Create
 app.get('/api/profile', (req, res) => {
-  db.query('SELECT * FROM user_profile', (err, results) => {
+  db.query('SELECT * FROM profile', (err, results) => {
     if (err) throw err;
     res.json(results);
   });
@@ -137,8 +137,41 @@ app.get('/api/profile', (req, res) => {
 // Lấy thông tin user theo ID -> Create
 app.get('/api/profile/:id', (req, res) => {
   const userId = req.params.id;
-  db.query('SELECT * FROM user_profile WHERE id = ?', [userId], (err, results) => {
+  db.query('SELECT * FROM profile WHERE id = ?', [userId], (err, results) => {
     if (err) throw err;
     res.json(results[0]);
   });
 });
+
+// API lấy dữ liệu từ cơ sở dữ liệu
+app.get('/api/profile', (req, res) => {
+  const query = 'SELECT * FROM profile'; // Thay đổi câu truy vấn phù hợp với bảng và dữ liệu của bạn
+  db.query(query, (err, result) => {
+    if (err) {
+      console.error('Lỗi truy vấn cơ sở dữ liệu: ', err);
+      res.status(500).json({ error: 'Lỗi truy vấn cơ sở dữ liệu.' });
+      return;
+    }
+    res.json(result);
+  });
+});
+
+// API thêm dữ liệu hình ảnh vào cơ sở dữ liệu
+app.post('/api/profile', (req, res) => {
+  const { image_url } = req.body; // Đường dẫn hình ảnh được gửi từ frontend
+  if (!image_url) {
+    res.status(400).json({ error: 'Đường dẫn hình ảnh không được để trống.' });
+    return;
+  }
+  const query = `INSERT INTO profile (image_path) VALUES ('${image_url}')`;
+  db.query(query, (err, result) => {
+    if (err) {
+      console.error('Lỗi truy vấn cơ sở dữ liệu: ', err);
+      res.status(500).json({ error: 'Lỗi truy vấn cơ sở dữ liệu.' });
+      return;
+    }
+    res.json({ message: 'Lưu đường dẫn hình ảnh thành công.' });
+  });
+});
+
+
