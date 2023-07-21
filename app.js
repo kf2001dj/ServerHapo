@@ -126,38 +126,8 @@ app.listen(4000, () => {
 });
 
 
-// GET: Lấy danh sách người dùng -> Create
-app.get('/api/profile', (req, res) => {
-  db.query('SELECT * FROM profile', (err, results) => {
-    if (err) throw err;
-    res.json(results);
-  });
-});
-
-// Lấy thông tin user theo ID -> Create
-app.get('/api/profile/:id', (req, res) => {
-  const userId = req.params.id;
-  db.query('SELECT * FROM profile WHERE id = ?', [userId], (err, results) => {
-    if (err) throw err;
-    res.json(results[0]);
-  });
-});
-
-// API lấy dữ liệu từ cơ sở dữ liệu
-app.get('/api/profile', (req, res) => {
-  const query = 'SELECT * FROM profile'; // Thay đổi câu truy vấn phù hợp với bảng và dữ liệu của bạn
-  db.query(query, (err, result) => {
-    if (err) {
-      console.error('Lỗi truy vấn cơ sở dữ liệu: ', err);
-      res.status(500).json({ error: 'Lỗi truy vấn cơ sở dữ liệu.' });
-      return;
-    }
-    res.json(result);
-  });
-});
-
 // API thêm dữ liệu hình ảnh vào cơ sở dữ liệu
-app.post('/api/profile', (req, res) => {
+app.post('/api/users', (req, res) => {
   const { image_url } = req.body; // Đường dẫn hình ảnh được gửi từ frontend
   if (!image_url) {
     res.status(400).json({ error: 'Đường dẫn hình ảnh không được để trống.' });
@@ -174,4 +144,48 @@ app.post('/api/profile', (req, res) => {
   });
 });
 
+// Add an API route to handle updating user data based on user ID
+app.put('/api/users/:id', (req, res) => {
+  const userId = req.params.id;
+  const userData = req.body;
+  // Perform the update operation in your database, using the received userData
+  // Example: Update user data in the database and send a success response
+  db.query('UPDATE users SET name=?, email=?, birthdate=?, phone=?, address=?, about=? WHERE id = ?', 
+    [userData.name, userData.email, userData.birthdate, userData.phone, userData.address, userData.about, userId],
+    (err, results) => {
+      if (err) {
+        console.error('Error updating user data: ', err);
+        res.status(500).json({ error: 'Error updating user data' });
+        return;
+      }
+      res.json({ message: 'User data updated successfully' });
+    });
+});
 
+
+// GET: Lấy danh sách người dùng -> Create
+app.get('/api/course', (req, res) => {
+  db.query('SELECT * FROM course', (err, results) => {
+    if (err) throw err;
+    res.json(results);
+  });
+});
+
+// GET: Lấy thông tin khóa học theo ID
+app.get('/api/course/:id', (req, res) => {
+  const courseId = req.params.id;
+  // Truy vấn cơ sở dữ liệu để lấy thông tin khóa học dựa vào courseId
+  db.query('SELECT * FROM course WHERE id = ?', [courseId], (err, results) => {
+    if (err) {
+      console.error('Lỗi khi truy vấn cơ sở dữ liệu: ', err);
+      res.status(500).json({ error: 'Lỗi khi truy vấn cơ sở dữ liệu' });
+    } else {
+      if (results.length === 0) {
+        res.status(404).json({ error: 'Không tìm thấy khóa học với ID đã cho' });
+      } else {
+        const course = results[0];
+        res.json(course);
+      }
+    }
+  });
+});
