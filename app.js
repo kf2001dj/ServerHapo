@@ -144,12 +144,9 @@ app.post('/api/users', (req, res) => {
   });
 });
 
-// Add an API route to handle updating user data based on user ID
 app.put('/api/users/:id', (req, res) => {
   const userId = req.params.id;
   const userData = req.body;
-  // Perform the update operation in your database, using the received userData
-  // Example: Update user data in the database and send a success response
   db.query('UPDATE users SET name=?, email=?, birthdate=?, phone=?, address=?, about=? WHERE id = ?', 
     [userData.name, userData.email, userData.birthdate, userData.phone, userData.address, userData.about, userId],
     (err, results) => {
@@ -163,29 +160,15 @@ app.put('/api/users/:id', (req, res) => {
 });
 
 
-// GET: Lấy danh sách người dùng -> Create
-app.get('/api/course', (req, res) => {
-  db.query('SELECT * FROM course', (err, results) => {
-    if (err) throw err;
-    res.json(results);
-  });
-});
 
-// GET: Lấy thông tin khóa học theo ID
-app.get('/api/course/:id', (req, res) => {
-  const courseId = req.params.id;
-  // Truy vấn cơ sở dữ liệu để lấy thông tin khóa học dựa vào courseId
-  db.query('SELECT * FROM course WHERE id = ?', [courseId], (err, results) => {
+// Định nghĩa API để lấy danh sách các khóa học
+app.get('/api/course', (req, res) => {
+  const sql = 'SELECT * FROM course';
+  db.query(sql, (err, courses) => {
     if (err) {
-      console.error('Lỗi khi truy vấn cơ sở dữ liệu: ', err);
-      res.status(500).json({ error: 'Lỗi khi truy vấn cơ sở dữ liệu' });
-    } else {
-      if (results.length === 0) {
-        res.status(404).json({ error: 'Không tìm thấy khóa học với ID đã cho' });
-      } else {
-        const course = results[0];
-        res.json(course);
-      }
+      throw err;
     }
+    // Trả về danh sách các khóa học
+    res.json(courses);
   });
 });
