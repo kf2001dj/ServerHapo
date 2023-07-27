@@ -3,7 +3,7 @@ const mysql = require('mysql');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-
+const jwt = require('jsonwebtoken');
 const app = express();
 app.use(express.json());
 
@@ -16,7 +16,6 @@ app.use(
     saveUninitialized: true, // lưu lại phiên chưa được khởi tạo
   })
 );
-
 // Kết nối tới cơ sở dữ liệu MySQL
 const db = mysql.createConnection({
   host: 'localhost',
@@ -24,7 +23,6 @@ const db = mysql.createConnection({
   password: '',
   database: 'hapo',
 });
-
 // Kết nối MySQL
 db.connect((error) => {
   if (error) {
@@ -33,11 +31,6 @@ db.connect((error) => {
     console.log('Kết nối MySQL thành công!');
   }
 });
-
-// Sử dụng body-parser để xử lý dữ liệu POST
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
 // GET: Lấy danh sách người dùng -> Create
 app.get('/api/users', (req, res) => {
   db.query('SELECT * FROM users', (err, results) => {
@@ -54,8 +47,14 @@ app.get('/api/users/:id', (req, res) => {
     res.json(results[0]);
   });
 });
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Sử dụng body-parser để xử lý dữ liệu POST
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+// JWT secret key (you should use a strong and unique secret key)
+const jwtSecretKey = 'your_secret_key';
 
-// Đăng nhập
+// Đăng nhập và cấp JWT token
 app.post('/api/signin', (req, res) => {
   const { username, password } = req.body;
   if (username && password) {
@@ -65,9 +64,11 @@ app.post('/api/signin', (req, res) => {
       (error, results, fields) => {
         if (error) throw error;
         if (results.length > 0) {
-          req.session.loggedin = true;
-          req.session.username = username;
-          res.sendStatus(200);
+          // Generate and sign a JWT token
+          const token = jwt.sign({ username }, jwtSecretKey, { expiresIn: '1h' });
+
+          // Send the token in the response
+          res.json({ token });
         } else {
           res.sendStatus(401);
         }
@@ -84,15 +85,25 @@ app.post('/api/signout', (req, res) => {
   res.sendStatus(200);
 });
 
-// Kiểm tra trạng thái đăng nhập
+// Kiểm tra trạng thái đăng nhập (protected route)
 app.get('/api/signin/status', (req, res) => {
-  if (req.session.loggedin) {
-    res.sendStatus(200);
+  // Verify the JWT token from the Authorization header
+  const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
+  if (token) {
+    jwt.verify(token, jwtSecretKey, (err, decoded) => {
+      if (err) {
+        // Invalid token or token expired
+        res.sendStatus(401);
+      } else {
+        // Token is valid, the user is logged in
+        res.sendStatus(200);
+      }
+    });
   } else {
     res.sendStatus(401);
   }
 });
-
+////////////////////////////////////////////////////////////////////////////////////////
 // Đăng ký
 app.post('/api/signup', (req, res) => {
   const { username, email, password, confirmPassword } = req.body;
@@ -119,7 +130,7 @@ app.post('/api/signup', (req, res) => {
 });
 
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Khởi chạy server
 app.listen(4000, () => {
   console.log('Server đang lắng nghe trên cổng 4000...');
@@ -240,38 +251,3 @@ app.get('/api/courses_users', (req, res) => {
   });
 });
 
-
-// API to remove a course from the user's profile
-app.delete('/api/users/:id/removeCourse/:courseId', (req, res) => {
-  const userId = req.params.id;
-  const courseId = req.params.courseId;
-
-  // Remove the course from the user's profile
-  const removeQuery = 'DELETE FROM courses_users WHERE user_id = ? AND course_id = ?';
-  db.query(removeQuery, [userId, courseId], (err) => {
-    if (err) {
-      console.error('Error removing course from user:', err);
-      res.status(500).json({ error: 'Failed to remove course from user' });
-    } else {
-      res.sendStatus(200);
-    }
-  });
-});
-
-// API thêm khoá học sau khi đăng nhập
-app.post('/api/add_course', (req, res) => {
-  const { user_id, course_id } = req.body;
-
-  // Kiểm tra tính hợp lệ của dữ liệu (ví dụ: kiểm tra user_id và course_id có tồn tại không)
-
-  // Liên kết khoá học với người dùng trong bảng trung gian Courses_Users
-  const queryLinkCourseToUser = 'INSERT INTO courses_users (course_id, user_id) VALUES (?, ?)';
-  connection.query(queryLinkCourseToUser, [course_id, user_id], (err) => {
-    if (err) {
-      console.error('Lỗi khi liên kết khoá học với người dùng:', err);
-      res.status(500).json({ message: 'Đã có lỗi xảy ra khi liên kết khoá học với người dùng.' });
-    } else {
-      res.json({ message: 'Thêm khoá học thành công!' });
-    }
-  });
-});
