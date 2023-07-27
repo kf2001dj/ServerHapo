@@ -160,15 +160,118 @@ app.put('/api/users/:id', (req, res) => {
 });
 
 
+// API to get courses for a specific user
+app.get('/api/users/:id/courses', (req, res) => {
+  const userId = req.params.id;
+  const sql = 'SELECT cu.id, cu.course_id, c.txtname, c.image_url FROM courses_users cu JOIN courses c ON cu.course_id = c.id WHERE cu.user_id = ?';
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error('Error fetching courses for user:', err);
+      res.status(500).json({ error: 'Failed to fetch courses for user' });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
 
-// Định nghĩa API để lấy danh sách các khóa học
-app.get('/api/course', (req, res) => {
-  const sql = 'SELECT * FROM course';
+// Định nghĩa API để lấy danh sách các khóa học ||phần all course
+app.get('/api/courses', (req, res) => {
+  const sql = 'SELECT * FROM courses';
   db.query(sql, (err, courses) => {
     if (err) {
       throw err;
     }
     // Trả về danh sách các khóa học
     res.json(courses);
+  });
+});
+
+// API to get course information by ID
+app.get('/api/courses/:id', (req, res) => {
+  const courseId = req.params.id;
+  const sql = 'SELECT * FROM courses WHERE id = ?';
+  db.query(sql, [courseId], (err, results) => {
+    if (err) {
+      console.error('Error fetching course data:', err);
+      res.status(500).json({ error: 'Failed to fetch course data' });
+    } else {
+      if (results.length === 0) {
+        // Course with the specified ID not found
+        res.status(404).json({ message: 'Course not found' });
+      } else {
+        // Course data found, return it to the client
+        res.status(200).json(results[0]);
+      }
+    }
+  });
+});
+
+app.get('/api/courses_users', (req, res) => {
+  const sql = 'SELECT * FROM courses_users';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error fetching courses_users:', err);
+      res.status(500).json({ error: 'Failed to fetch courses_users' });
+    } else {
+      // Fetch the course information for each entry in courses_users
+      const coursePromises = results.map((courseUser) => {
+        return new Promise((resolve, reject) => {
+          const getCourseSql = 'SELECT * FROM courses WHERE id = ?';
+          db.query(getCourseSql, [courseUser.course_id], (err, courseResults) => {
+            if (err) {
+              console.error('Error fetching course:', err);
+              reject(err);
+            } else {
+              resolve({ ...courseUser, course: courseResults[0] });
+            }
+          });
+        });
+      });
+      // Resolve all promises and return the data
+      Promise.all(coursePromises)
+        .then((courseData) => {
+          res.status(200).json(courseData);
+        })
+        .catch((err) => {
+          console.error('Error fetching course data:', err);
+          res.status(500).json({ error: 'Failed to fetch course data' });
+        });
+    }
+  });
+});
+
+
+// API to remove a course from the user's profile
+app.delete('/api/users/:id/removeCourse/:courseId', (req, res) => {
+  const userId = req.params.id;
+  const courseId = req.params.courseId;
+
+  // Remove the course from the user's profile
+  const removeQuery = 'DELETE FROM courses_users WHERE user_id = ? AND course_id = ?';
+  db.query(removeQuery, [userId, courseId], (err) => {
+    if (err) {
+      console.error('Error removing course from user:', err);
+      res.status(500).json({ error: 'Failed to remove course from user' });
+    } else {
+      res.sendStatus(200);
+    }
+  });
+});
+
+// API thêm khoá học sau khi đăng nhập
+app.post('/api/add_course', (req, res) => {
+  const { user_id, course_id } = req.body;
+
+  // Kiểm tra tính hợp lệ của dữ liệu (ví dụ: kiểm tra user_id và course_id có tồn tại không)
+
+  // Liên kết khoá học với người dùng trong bảng trung gian Courses_Users
+  const queryLinkCourseToUser = 'INSERT INTO courses_users (course_id, user_id) VALUES (?, ?)';
+  connection.query(queryLinkCourseToUser, [course_id, user_id], (err) => {
+    if (err) {
+      console.error('Lỗi khi liên kết khoá học với người dùng:', err);
+      res.status(500).json({ message: 'Đã có lỗi xảy ra khi liên kết khoá học với người dùng.' });
+    } else {
+      res.json({ message: 'Thêm khoá học thành công!' });
+    }
   });
 });
