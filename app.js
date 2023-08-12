@@ -3,7 +3,7 @@ const mysql = require('mysql');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-
+const jwt = require('jsonwebtoken');
 const app = express();
 app.use(express.json());
 
@@ -16,7 +16,6 @@ app.use(
     saveUninitialized: true, // lưu lại phiên chưa được khởi tạo
   })
 );
-
 // Kết nối tới cơ sở dữ liệu MySQL
 const db = mysql.createConnection({
   host: 'localhost',
@@ -24,7 +23,6 @@ const db = mysql.createConnection({
   password: '',
   database: 'hapo',
 });
-
 // Kết nối MySQL
 db.connect((error) => {
   if (error) {
@@ -33,11 +31,6 @@ db.connect((error) => {
     console.log('Kết nối MySQL thành công!');
   }
 });
-
-// Sử dụng body-parser để xử lý dữ liệu POST
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
 // GET: Lấy danh sách người dùng -> Create
 app.get('/api/users', (req, res) => {
   db.query('SELECT * FROM users', (err, results) => {
@@ -54,8 +47,14 @@ app.get('/api/users/:id', (req, res) => {
     res.json(results[0]);
   });
 });
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Sử dụng body-parser để xử lý dữ liệu POST
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+// JWT secret key (you should use a strong and unique secret key)
+const jwtSecretKey = 'your_secret_key';
 
-// Đăng nhập
+// Đăng nhập và cấp JWT token
 app.post('/api/signin', (req, res) => {
   const { username, password } = req.body;
   if (username && password) {
@@ -65,9 +64,11 @@ app.post('/api/signin', (req, res) => {
       (error, results, fields) => {
         if (error) throw error;
         if (results.length > 0) {
-          req.session.loggedin = true;
-          req.session.username = username;
-          res.sendStatus(200);
+          // Generate and sign a JWT token
+          const token = jwt.sign({ username }, jwtSecretKey, { expiresIn: '1h' });
+
+          // Send the token in the response
+          res.json({ token });
         } else {
           res.sendStatus(401);
         }
@@ -84,15 +85,25 @@ app.post('/api/signout', (req, res) => {
   res.sendStatus(200);
 });
 
-// Kiểm tra trạng thái đăng nhập
+// Kiểm tra trạng thái đăng nhập (protected route)
 app.get('/api/signin/status', (req, res) => {
-  if (req.session.loggedin) {
-    res.sendStatus(200);
+  // Verify the JWT token from the Authorization header
+  const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
+  if (token) {
+    jwt.verify(token, jwtSecretKey, (err, decoded) => {
+      if (err) {
+        // Invalid token or token expired
+        res.sendStatus(401);
+      } else {
+        // Token is valid, the user is logged in
+        res.sendStatus(200);
+      }
+    });
   } else {
     res.sendStatus(401);
   }
 });
-
+////////////////////////////////////////////////////////////////////////////////////////
 // Đăng ký
 app.post('/api/signup', (req, res) => {
   const { username, email, password, confirmPassword } = req.body;
@@ -119,7 +130,7 @@ app.post('/api/signup', (req, res) => {
 });
 
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Khởi chạy server
 app.listen(4000, () => {
   console.log('Server đang lắng nghe trên cổng 4000...');
@@ -160,10 +171,23 @@ app.put('/api/users/:id', (req, res) => {
 });
 
 
+// API to get courses for a specific user
+app.get('/api/users/:id/courses', (req, res) => {
+  const userId = req.params.id;
+  const sql = 'SELECT cu.id, cu.course_id, c.txtname, c.image_url FROM courses_users cu JOIN courses c ON cu.course_id = c.id WHERE cu.user_id = ?';
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error('Error fetching courses for user:', err);
+      res.status(500).json({ error: 'Failed to fetch courses for user' });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
 
-// Định nghĩa API để lấy danh sách các khóa học
-app.get('/api/course', (req, res) => {
-  const sql = 'SELECT * FROM course';
+// Định nghĩa API để lấy danh sách các khóa học ||phần all course
+app.get('/api/courses', (req, res) => {
+  const sql = 'SELECT * FROM courses';
   db.query(sql, (err, courses) => {
     if (err) {
       throw err;
@@ -172,3 +196,58 @@ app.get('/api/course', (req, res) => {
     res.json(courses);
   });
 });
+
+// API to get course information by ID
+app.get('/api/courses/:id', (req, res) => {
+  const courseId = req.params.id;
+  const sql = 'SELECT * FROM courses WHERE id = ?';
+  db.query(sql, [courseId], (err, results) => {
+    if (err) {
+      console.error('Error fetching course data:', err);
+      res.status(500).json({ error: 'Failed to fetch course data' });
+    } else {
+      if (results.length === 0) {
+        // Course with the specified ID not found
+        res.status(404).json({ message: 'Course not found' });
+      } else {
+        // Course data found, return it to the client
+        res.status(200).json(results[0]);
+      }
+    }
+  });
+});
+
+app.get('/api/courses_users', (req, res) => {
+  const sql = 'SELECT * FROM courses_users';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error fetching courses_users:', err);
+      res.status(500).json({ error: 'Failed to fetch courses_users' });
+    } else {
+      // Fetch the course information for each entry in courses_users
+      const coursePromises = results.map((courseUser) => {
+        return new Promise((resolve, reject) => {
+          const getCourseSql = 'SELECT * FROM courses WHERE id = ?';
+          db.query(getCourseSql, [courseUser.course_id], (err, courseResults) => {
+            if (err) {
+              console.error('Error fetching course:', err);
+              reject(err);
+            } else {
+              resolve({ ...courseUser, course: courseResults[0] });
+            }
+          });
+        });
+      });
+      // Resolve all promises and return the data
+      Promise.all(coursePromises)
+        .then((courseData) => {
+          res.status(200).json(courseData);
+        })
+        .catch((err) => {
+          console.error('Error fetching course data:', err);
+          res.status(500).json({ error: 'Failed to fetch course data' });
+        });
+    }
+  });
+});
+
