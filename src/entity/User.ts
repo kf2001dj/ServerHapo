@@ -1,5 +1,4 @@
-// src/entities/User.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
 export class User {
@@ -14,4 +13,35 @@ export class User {
 
   @Column()
   password: string;
+}
+
+// src/entities/Course.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+
+@Entity()
+export class Course {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  txtname: string;
+
+  @Column()
+  image_url: string;
+}
+
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { User } from './User.entity';
+import { Course } from './Course.entity';
+
+@Entity()
+export class CourseUser {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ManyToOne(() => User, user => user.courseUsers)
+  user: User;
+
+  @ManyToOne(() => Course, course => course.courseUsers)
+  course: Course;
 }
