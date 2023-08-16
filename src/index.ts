@@ -1,22 +1,26 @@
-import { createConnection } from "typeorm";
+import express from "express";
+import { connectDatabase } from "./datasource/DataCourse";
+import userRouter from "./routers/UserRouter";
 
-const main = async () => {
-  try {
-    const connection = await createConnection({
-      type: "mysql",
-      host: "localhost",
-      port: 3306,
-      username: "root",
-      password: "",
-      database: "hapo",
+const app = express();
+
+app.use(express.json());
+
+app.use("/api/users", userRouter);
+
+
+
+
+app.get("/", (req, res) => {
+  res.send("Hello Thanh Dong, Express with TypeORM!");
+});
+
+connectDatabase()
+  .then(() => {
+    app.listen(4000, () => {
+      console.log("Server is running on port 4000");
     });
-
-    console.log("Connection to the database successful!");
-  } catch (error) {
+  })
+  .catch((error) => {
     console.error("Error connecting to the database:", error);
-  }
-};
-
-main();
-
-console.log("hello word 555555555");
+  });

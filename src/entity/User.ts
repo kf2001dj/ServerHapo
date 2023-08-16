@@ -1,47 +1,100 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
-@Entity()
+@Entity({ name: "users" })
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ name: "image_url" })
+  imageUrl: string;
 
   @Column()
   username: string;
 
   @Column()
+  password: string;
+
+  @Column()
+  name: string;
+
+  @Column()
   email: string;
 
   @Column()
-  password: string;
+  birthdate: string;
+
+  @Column()
+  phone: string;
+
+  @Column()
+  address: string;
+
+  @Column()
+  about: string;
 }
 
-// src/entities/Course.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-
-@Entity()
-export class Course {
+@Entity({ name: "courses" })
+export class Courses {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ name: "image_url" })
+  imageUrl: string;
+
+  @Column()
+  name: string;
+
+  @Column()
+  about: string;
+
+  @Column()
+  learners: string;
+
+  @Column()
+  lessons: string;
+
+  @Column()
+  time: string;
 
   @Column()
   txtname: string;
 
   @Column()
-  image_url: string;
+  logo: string;
+
+  @Column()
+  logo_learners: string;
+
+  @Column()
+  logo_lessons: string;
+
+  @Column()
+  logo_times: string;
+
+  @Column()
+  logo_tags: string;
+
+  @Column()
+  logo_price: string;
+
+  @Column()
+  logo_searc: string;
+
+  @Column()
+  logo_left: string;
+
+  @Column()
+  logo_right: string;
 }
 
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { User } from './User.entity';
-import { Course } from './Course.entity';
-
-@Entity()
-export class CourseUser {
+@Entity({ name: "courses_users" })
+export class Courses_User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, user => user.courseUsers)
-  user: User;
+  @Column()
+  courses_id: string;
 
-  @ManyToOne(() => Course, course => course.courseUsers)
-  course: Course;
+  @Column()
+  user_id: string;
 }
