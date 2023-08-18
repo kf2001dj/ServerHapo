@@ -5,17 +5,17 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 
 const userRouter = express.Router();
 
-userRouter.get("/", UserController.getAllUsers);
-userRouter.get("/:id", UserController.getUserById);
+userRouter.get("/users", UserController.getAllUsers);
+userRouter.get("/users/:id", UserController.getUsersById);
 
 userRouter.post("/signin", UserController.signIn);
 
-userRouter.use(authMiddleware);
-userRouter.get("/signin/status", UserController.checkLoginStatus);
-userRouter.get("/protected", (req, res) => {
-  res.send("This is a protected route.");
-});
+userRouter.get(
+  "/signin/status",
+  authMiddleware,
+  UserController.checkLoginStatus
+);
 
-// userRouter.post("/signout", UserController.signOut);
+userRouter.post("/signout", authMiddleware, UserController.signOut);
 
 export default userRouter;

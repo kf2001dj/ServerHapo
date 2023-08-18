@@ -6,14 +6,22 @@ import * as jwt from "jsonwebtoken";
 const jwtSecretKey = "your_secret_key";
 
 export class UserService {
+  //handle tabble user
   static async getAllUsers() {
     const userRepository = getRepository(User);
     return userRepository.find();
   }
 
-  static async getUserById(userId: string) {
-    const userRepository = getRepository(User);
-    return userRepository.findOne({ id: userId } as FindOneOptions<User>);
+  //handle tabble user:id
+  static async getUsersById(id: number): Promise<User | null> {
+    const usersRepository = getRepository(User);
+
+    const options: FindOneOptions<User> = {
+      where: { id },
+    };
+
+    const users = await usersRepository.findOne(options);
+    return users || null;
   }
 
   //code handle sign in
@@ -41,6 +49,7 @@ export class UserService {
       return null;
     }
   }
+
   //code handle status sigin
   static async verifyToken(token: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
@@ -55,16 +64,16 @@ export class UserService {
   }
 
   //code handle sign out
-  // static async logout(username: string): Promise<void> {
-  //   try {
-  //     const userRepository = getRepository(User);
-  //     const searchOptions: FindOneOptions<User> = { where: { username } };
-  //     const user = await userRepository.findOne(searchOptions);
+  static async logout(username: string): Promise<void> {
+    try {
+      const userRepository = getRepository(User);
+      const searchOptions: FindOneOptions<User> = { where: { username } };
+      const user = await userRepository.findOne(searchOptions);
 
-  //     if (user) {
-  //     }
-  //   } catch (error) {
-  //     throw new Error("Error while logging out");
-  //   }
-  // }
+      if (user) {
+      }
+    } catch (error) {
+      throw new Error("Error while logging out");
+    }
+  }
 }

@@ -12,13 +12,15 @@ export default class UserController {
     }
   }
   //code handle  userid
-  static async getUserById(req: Request, res: Response) {
-    const userId = req.params.id;
-    try {
-      const user = await UserService.getUserById(userId);
-      res.json(user);
-    } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+  static async getUsersById(req: Request, res: Response) {
+    const usersId = parseInt(req.params.id, 10);
+
+    const users = await UserService.getUsersById(usersId);
+
+    if (users) {
+      res.status(200).json(users);
+    } else {
+      res.status(404).json({ message: "Course not found" });
     }
   }
   //code handle  signin and status
@@ -66,21 +68,18 @@ export default class UserController {
   }
 
   //code handle sign out
-  // static async signOut(req: Request, res: Response) {
-  //   const { username } = req.body;
-  //   if (username) {
-  //     try {
-  //       await UserService.logout(username);
-  //       res.sendStatus(200);
-  //     } catch (error) {
-  //       console.error(error);
-  //       res.sendStatus(500);
-  //     }
-  //   } else {
-  //     res.sendStatus(400);
-  //   }
-  // }
-
-
-  
+  static async signOut(req: Request, res: Response) {
+    const { username } = req.body;
+    if (username) {
+      try {
+        await UserService.logout(username);
+        res.sendStatus(200);
+      } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+      }
+    } else {
+      res.sendStatus(400);
+    }
+  }
 }
