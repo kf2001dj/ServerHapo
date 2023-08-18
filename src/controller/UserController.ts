@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { UserService } from "../services/UserService";
-// import jwt, { JsonWebTokenError } from "jsonwebtoken";
+
 export default class UserController {
   //code handle  id
   static async getAllUsers(req: Request, res: Response) {
@@ -21,78 +21,66 @@ export default class UserController {
       res.status(500).json({ message: "Internal server error" });
     }
   }
-  //code handle  signin
-  // static async signin(req: Request, res: Response) {
-  //   const { username, password } = req.body;
-  //   if (username && password) {
-  //     try {
-  //       const token = await UserService.signin(username, password);
-  //       if (token) {
-  //         res.json({ token });
-  //       } else {
-  //         res.sendStatus(401);
-  //       }
-  //     } catch (error) {
-  //       res.status(500).json({ message: "Error signing in" });
-  //     }
-  //   } else {
-  //     res.sendStatus(400);
-  //   }
-  // }
+  //code handle  signin and status
+  static async signIn(req: Request, res: Response) {
+    const { username, password } = req.body;
+
+    if (username && password) {
+      try {
+        const token = await UserService.signIn(username, password);
+
+        if (token) {
+          res.json({ token });
+        } else {
+          res.sendStatus(401);
+        }
+      } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+      }
+    } else {
+      res.sendStatus(400);
+    }
+  }
+
+  static async checkLoginStatus(req: Request, res: Response) {
+    const token = req.headers.authorization
+      ? req.headers.authorization.split(" ")[1]
+      : null;
+
+    if (token) {
+      try {
+        const isLoggedIn = await UserService.verifyToken(token);
+        if (isLoggedIn) {
+          res.sendStatus(200);
+        } else {
+          res.sendStatus(401);
+        }
+      } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+      }
+    } else {
+      res.sendStatus(401);
+    }
+  }
+
   //code handle sign out
-  // static async signout(req: Request, res: Response) {
-  //   const userId = req.params.id;
-  //   if (!userId) {
-  //     res.sendStatus(400);
-  //     return;
-  //   }
+  static async signOut(req: Request, res: Response) {
+    const { username } = req.body;
+    if (username) {
+      try {
+        await UserService.logout(username);
+        res.sendStatus(200);
+      } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+      }
+    } else {
+      res.sendStatus(400);
+    }
+  }
 
-  //   try {
-  //     await UserService.signout(Number(userId));
-  //     res.sendStatus(200);
-  //   } catch (error) {
-  //     res.status(500).json({ message: "Error signing out" });
-  //   }
-  // }
 
-  //code check the status of login
-  // static checkLoginStatus(req: Request, res: Response) {
-  //   const token = req.headers.authorization
-  //     ? req.headers.authorization.split(" ")[1]
-  //     : null;
-  //   if (token) {
-  //     const jwtSecretKey = "your_secret_key";
-  //     try {
-  //       jwt.verify(token, jwtSecretKey);
-  //       res.sendStatus(200);
-  //     } catch (err) {
-  //       if (err instanceof JsonWebTokenError) {
-  //         res.sendStatus(401);
-  //       } else {
-  //         res.status(500).json({ message: "Error verifying token" });
-  //       }
-  //     }
-  //   } else {
-  //     res.sendStatus(401);
-  //   }
-  // }
-  //code decoding token
-  // static decodeToken(req: Request, res: Response) {
-  //   const token = req.headers.authorization
-  //     ? req.headers.authorization.split(" ")[1]
-  //     : null;
-  //   if (token) {
-  //     try {
-  //       const decodedToken = jwt.decode(token) as {
-  //         username: string;
-  //         exp: number;
-  //       }; // Ép kiểu dữ liệu
-  //       res.json(decodedToken);
-  //     } catch (error) {
-  //       res.status(500).json({ message: "Error decoding token" });
-  //     }
-  //   } else {
-  //     res.status(401).json({ message: "Token not provided" });
-  //   }
-  // }
+  
 }
