@@ -1,53 +1,86 @@
-import { AppDataSource } from "../data-source"
-import { NextFunction, Request, Response } from "express"
-import { User } from "../entity/User"
+import { Request, Response } from "express";
+import { UserService } from "../services/UserService";
 
-export class UserController {
-
-    private userRepository = AppDataSource.getRepository(User)
-
-    async all(request: Request, response: Response, next: NextFunction) {
-        return this.userRepository.find()
+export default class UserController {
+  //code handle  id
+  static async getAllUsers(req: Request, res: Response) {
+    try {
+      const users = await UserService.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
     }
+  }
+  //code handle  userid
+  static async getUserById(req: Request, res: Response) {
+    const userId = req.params.id;
+    try {
+      const user = await UserService.getUserById(userId);
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+  //code handle  signin and status
+  static async signIn(req: Request, res: Response) {
+    const { username, password } = req.body;
 
-    async one(request: Request, response: Response, next: NextFunction) {
-        const id = parseInt(request.params.id)
+    if (username && password) {
+      try {
+        const token = await UserService.signIn(username, password);
 
-
-        const user = await this.userRepository.findOne({
-            where: { id }
-        })
-
-        if (!user) {
-            return "unregistered user"
+        if (token) {
+          res.json({ token });
+        } else {
+          res.sendStatus(401);
         }
-        return user
+      } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+      }
+    } else {
+      res.sendStatus(400);
     }
+  }
 
-    async save(request: Request, response: Response, next: NextFunction) {
-        const { firstName, lastName, age } = request.body;
+  static async checkLoginStatus(req: Request, res: Response) {
+    const token = req.headers.authorization
+      ? req.headers.authorization.split(" ")[1]
+      : null;
 
-        const user = Object.assign(new User(), {
-            firstName,
-            lastName,
-            age
-        })
-
-        return this.userRepository.save(user)
-    }
-
-    async remove(request: Request, response: Response, next: NextFunction) {
-        const id = parseInt(request.params.id)
-
-        let userToRemove = await this.userRepository.findOneBy({ id })
-
-        if (!userToRemove) {
-            return "this user not exist"
+    if (token) {
+      try {
+        const isLoggedIn = await UserService.verifyToken(token);
+        if (isLoggedIn) {
+          res.sendStatus(200);
+        } else {
+          res.sendStatus(401);
         }
-
-        await this.userRepository.remove(userToRemove)
-
-        return "user has been removed"
+      } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+      }
+    } else {
+      res.sendStatus(401);
     }
+  }
 
+  //code handle sign out
+  static async signOut(req: Request, res: Response) {
+    const { username } = req.body;
+    if (username) {
+      try {
+        await UserService.logout(username);
+        res.sendStatus(200);
+      } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+      }
+    } else {
+      res.sendStatus(400);
+    }
+  }
+
+
+  
 }
