@@ -55,16 +55,16 @@ export class UserService {
   }
 
   //code handle sign out
-  static async logout(username: string): Promise<void> {
-    try {
-      const userRepository = getRepository(User);
-      const searchOptions: FindOneOptions<User> = { where: { username } };
-      const user = await userRepository.findOne(searchOptions);
+  // static async logout(username: string): Promise<void> {
+  //   try {
+  //     const userRepository = getRepository(User);
+  //     const searchOptions: FindOneOptions<User> = { where: { username } };
+  //     const user = await userRepository.findOne(searchOptions);
 
-      if (user) {
-      }
-    } catch (error) {
-      throw new Error("Error while logging out");
-    }
-  }
+  //     if (user) {
+  //     }
+  //   } catch (error) {
+  //     throw new Error("Error while logging out");
+  //   }
+  // }
 }

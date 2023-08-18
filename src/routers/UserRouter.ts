@@ -16,6 +16,6 @@ userRouter.get("/protected", (req, res) => {
   res.send("This is a protected route.");
 });
 
-userRouter.post("/signout", UserController.signOut);
+// userRouter.post("/signout", UserController.signOut);
 
 export default userRouter;

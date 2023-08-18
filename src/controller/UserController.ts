@@ -66,20 +66,20 @@ export default class UserController {
   }
 
   //code handle sign out
-  static async signOut(req: Request, res: Response) {
-    const { username } = req.body;
-    if (username) {
-      try {
-        await UserService.logout(username);
-        res.sendStatus(200);
-      } catch (error) {
-        console.error(error);
-        res.sendStatus(500);
-      }
-    } else {
-      res.sendStatus(400);
-    }
-  }
+  // static async signOut(req: Request, res: Response) {
+  //   const { username } = req.body;
+  //   if (username) {
+  //     try {
+  //       await UserService.logout(username);
+  //       res.sendStatus(200);
+  //     } catch (error) {
+  //       console.error(error);
+  //       res.sendStatus(500);
+  //     }
+  //   } else {
+  //     res.sendStatus(400);
+  //   }
+  // }
 
 
   
