@@ -4,7 +4,15 @@ import userRouter from "./routers/UserRouter";
 import bodyParser from "body-parser";
 import courseRouter from "./routers/CourseRouter";
 
+const cors = require("cors");
 const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -20,8 +28,8 @@ app.use("/all", courseRouter);
 
 connectDatabase()
   .then(() => {
-    app.listen(4000, () => {
-      console.log("Server is running on port 4000");
+    app.listen(5000, () => {
+      console.log("Server is running on port 5000");
     });
   })
   .catch((error) => {

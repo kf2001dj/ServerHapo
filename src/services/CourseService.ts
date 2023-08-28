@@ -10,7 +10,6 @@ export class CoursesService {
   static async getCourseById(id: number): Promise<Courses | null> {
     const courseRepository = getRepository(Courses);
 
-    // Sử dụng đối tượng FindOneOptions để truyền tham số
     const options: FindOneOptions<Courses> = {
       where: { id },
     };

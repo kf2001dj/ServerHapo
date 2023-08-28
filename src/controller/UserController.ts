@@ -11,6 +11,7 @@ export default class UserController {
       res.status(500).json({ message: "Internal server error" });
     }
   }
+
   //code handle  userid
   static async getUsersById(req: Request, res: Response) {
     const usersId = parseInt(req.params.id, 10);
@@ -23,6 +24,7 @@ export default class UserController {
       res.status(404).json({ message: "Course not found" });
     }
   }
+
   //code handle  signin and status
   static async signIn(req: Request, res: Response) {
     const { username, password } = req.body;

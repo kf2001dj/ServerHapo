@@ -47,7 +47,7 @@ app.get("/api/users/:id", (req, res) => {
     res.json(results[0]);
   });
 });
-////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // Sử dụng body-parser để xử lý dữ liệu POST
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
