@@ -84,4 +84,32 @@ export default class UserController {
       res.sendStatus(400);
     }
   }
+
+  //code handle sign up user
+  static async signUp(req: Request, res: Response) {
+    // async lưu trữ không đồng
+    const { username, email, password, confirmPassword } = req.body;
+
+    if (username && email && password && confirmPassword) {
+      if (password !== confirmPassword) {
+        return res
+          .status(400)
+          .json({ message: "Mật khẩu xác nhận không khớp" });
+      }
+
+      try {
+        const result = await UserService.createUser(username, email, password);
+        if (result) {
+          return res.sendStatus(201);
+        } else {
+          return res.sendStatus(500);
+        }
+      } catch (error) {
+        console.error(error);
+        return res.sendStatus(500);
+      }
+    } else {
+      return res.status(400).json({ message: "Yêu cầu không hợp lệ" });
+    }
+  }
 }

@@ -3,6 +3,8 @@ import { User } from "../entity/User";
 
 import * as jwt from "jsonwebtoken";
 
+import * as bcrypt from "bcrypt";
+
 const jwtSecretKey = "your_secret_key";
 
 export class UserService {
@@ -32,21 +34,60 @@ export class UserService {
     const userRepository = getRepository(User);
 
     try {
-      const user = await userRepository.findOne({
-        where: { username, password },
-      });
+      const user = await userRepository.findOne({ where: { username } });
 
       if (user) {
-        const token = jwt.sign({ username }, jwtSecretKey, {
-          expiresIn: "1h",
-        });
-        return token;
+        const passwordMatch = await bcrypt.compare(password, user.password);
+
+        if (passwordMatch) {
+          const token = jwt.sign({ username }, jwtSecretKey, {
+            expiresIn: "1h",
+          });
+          return token;
+        } else {
+          return null; // Mật khẩu không khớp
+        }
       } else {
-        return null;
+        return null; // Người dùng không tồn tại
       }
     } catch (error) {
       console.error(error);
       return null;
+    }
+  }
+
+  static async hashPassword(password: string): Promise<string> {
+    const saltRounds = 10;
+    return bcrypt.hash(password, saltRounds);
+  }
+
+  //code handle sign up
+  static async createUser(
+    username: string,
+    email: string,
+    password: string
+  ): Promise<boolean> {
+    const userRepository = getRepository(User);
+
+    try {
+      const existingUser = await userRepository.findOne({
+        where: [{ username }, { email }],
+      });
+      if (existingUser) {
+        return false; // người dùng đã tồn tại
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10); //mã hoá mật khẩu
+      const newUser = userRepository.create({
+        username,
+        email,
+        password: hashedPassword,
+      });
+      await userRepository.save(newUser);
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
     }
   }
 

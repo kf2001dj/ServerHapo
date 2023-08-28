@@ -17,5 +17,6 @@ userRouter.get(
 );
 
 userRouter.post("/signout", authMiddleware, UserController.signOut);
+userRouter.post("/up", UserController.signUp);
 
 export default userRouter;
