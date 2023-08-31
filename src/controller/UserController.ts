@@ -11,16 +11,20 @@ export default class UserController {
       res.status(500).json({ message: "Internal server error" });
     }
   }
+
   //code handle  userid
-  static async getUserById(req: Request, res: Response) {
-    const userId = req.params.id;
-    try {
-      const user = await UserService.getUserById(userId);
-      res.json(user);
-    } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+  static async getUsersById(req: Request, res: Response) {
+    const usersId = parseInt(req.params.id, 10);
+
+    const users = await UserService.getUsersById(usersId);
+
+    if (users) {
+      res.status(200).json(users);
+    } else {
+      res.status(404).json({ message: "Course not found" });
     }
   }
+
   //code handle  signin and status
   static async signIn(req: Request, res: Response) {
     const { username, password } = req.body;
@@ -81,6 +85,31 @@ export default class UserController {
     }
   }
 
+  //code handle sign up user
+  static async signUp(req: Request, res: Response) {
+    // async lưu trữ không đồng
+    const { username, email, password, confirmPassword } = req.body;
 
-  
+    if (username && email && password && confirmPassword) {
+      if (password !== confirmPassword) {
+        return res
+          .status(400)
+          .json({ message: "Mật khẩu xác nhận không khớp" });
+      }
+
+      try {
+        const result = await UserService.createUser(username, email, password);
+        if (result) {
+          return res.sendStatus(201);
+        } else {
+          return res.sendStatus(500);
+        }
+      } catch (error) {
+        console.error(error);
+        return res.sendStatus(500);
+      }
+    } else {
+      return res.status(400).json({ message: "Yêu cầu không hợp lệ" });
+    }
+  }
 }
