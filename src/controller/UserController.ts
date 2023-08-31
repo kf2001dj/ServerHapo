@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { UserService } from "../services/UserService";
 
 export default class UserController {
-  //code handle  id
+  //code handle id
   static async getAllUsers(req: Request, res: Response) {
     try {
       const users = await UserService.getAllUsers();
@@ -12,7 +12,7 @@ export default class UserController {
     }
   }
 
-  //code handle  userid
+  //code handle userid
   static async getUsersById(req: Request, res: Response) {
     const usersId = parseInt(req.params.id, 10);
 
@@ -25,7 +25,7 @@ export default class UserController {
     }
   }
 
-  //code handle  signin and status
+  //code handle signin and status
   static async signIn(req: Request, res: Response) {
     const { username, password } = req.body;
 
@@ -70,20 +70,20 @@ export default class UserController {
   }
 
   //code handle sign out
-  static async signOut(req: Request, res: Response) {
-    const { username } = req.body;
-    if (username) {
-      try {
-        await UserService.logout(username);
-        res.sendStatus(200);
-      } catch (error) {
-        console.error(error);
-        res.sendStatus(500);
-      }
-    } else {
-      res.sendStatus(400);
-    }
-  }
+  // static async signOut(req: Request, res: Response) {
+  //   const { username } = req.body;
+  //   if (username) {
+  //     try {
+  //       await UserService.logout(username);
+  //       res.sendStatus(200);
+  //     } catch (error) {
+  //       console.error(error);
+  //       res.sendStatus(500);
+  //     }
+  //   } else {
+  //     res.sendStatus(400);
+  //   }
+  // }
 
   //code handle sign up user
   static async signUp(req: Request, res: Response) {

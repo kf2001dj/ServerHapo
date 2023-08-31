@@ -5,7 +5,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: "image_url" })
+  @Column({ type: "varchar", length: 255 })
   imageUrl: string;
 
   @Column()

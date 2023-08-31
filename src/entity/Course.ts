@@ -5,7 +5,7 @@ export class Courses {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: "image_url" })
+  @Column()
   imageUrl: string;
 
   @Column()
