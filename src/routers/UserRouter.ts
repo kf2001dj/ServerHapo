@@ -16,6 +16,6 @@ userRouter.get(
   UserController.checkLoginStatus
 );
 
-// userRouter.post("/logout", UserController.signOut);
+userRouter.post("/signout", UserController.signOut);
 
 export default userRouter;

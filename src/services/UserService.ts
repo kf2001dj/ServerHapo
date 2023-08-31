@@ -57,7 +57,7 @@ export class UserService {
   }
 
   static async hashPassword(password: string): Promise<string> {
-    const saltRounds = 10;
+    const saltRounds = 10; //số vòng sử dụng khi băm mật khẩu
     return bcrypt.hash(password, saltRounds);
   }
 
@@ -105,17 +105,10 @@ export class UserService {
   }
 
   //code handle sign out
-  // static async logout(username: string): Promise<void> {
-  //   try {
-  //     const userRepository = getRepository(User);
-  //     const searchOptions: FindOneOptions<User> = { where: { username } };
-  //     const user = await userRepository.findOne(searchOptions);
-
-  //     if (user) {
-  //       // await userRepository.save(user);
-  //     }
-  //   } catch (error) {
-  //     throw new Error("Error while logging out");
-  //   }
-  // }
+  static async logOut(): Promise<void> {
+    try {
+    } catch (error) {
+      throw new Error("Error while logging out");
+    }
+  }
 }

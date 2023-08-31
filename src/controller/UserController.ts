@@ -70,20 +70,22 @@ export default class UserController {
   }
 
   //code handle sign out
-  // static async signOut(req: Request, res: Response) {
-  //   const { username } = req.body;
-  //   if (username) {
-  //     try {
-  //       await UserService.logout(username);
-  //       res.sendStatus(200);
-  //     } catch (error) {
-  //       console.error(error);
-  //       res.sendStatus(500);
-  //     }
-  //   } else {
-  //     res.sendStatus(400);
-  //   }
-  // }
+  static async signOut(req: Request, res: Response) {
+    const { username } = req.body; // Lấy thông tin người dùng từ body của request
+
+    if (username) {
+      // Kiểm tra xem thông tin người dùng có tồn tại hay không
+      try {
+        await UserService.logOut(); // Gọi hàm logOut từ lớp UserService để thực hiện đăng xuất
+        res.sendStatus(200); // Gửi mã trạng thái 200 nếu đăng xuất thành công
+      } catch (error) {
+        console.error(error);
+        res.sendStatus(500); // Gửi mã trạng thái 500 nếu có lỗi xảy ra trong quá trình đăng xuất
+      }
+    } else {
+      res.sendStatus(400); // Gửi mã trạng thái 400 nếu không có thông tin người dùng hợp lệ được cung cấp
+    }
+  }
 
   //code handle sign up user
   static async signUp(req: Request, res: Response) {
