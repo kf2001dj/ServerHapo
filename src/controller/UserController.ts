@@ -71,25 +71,44 @@ export default class UserController {
 
   //code handle sign out
   static async signOut(req: Request, res: Response) {
-    const { username } = req.body; // Lấy thông tin người dùng từ body của request
+    // Trích xuất token từ tiêu đề "authorization" của request
+    const token = req.headers.authorization
+      ? req.headers.authorization.split(" ")[1]
+      : null;
 
-    if (username) {
-      // Kiểm tra xem thông tin người dùng có tồn tại hay không
+    // Kiểm tra xem có token trong request không
+    if (token) {
       try {
-        await UserService.logOut(); // Gọi hàm logOut từ lớp UserService để thực hiện đăng xuất
-        res.sendStatus(200); // Gửi mã trạng thái 200 nếu đăng xuất thành công
+        // Kiểm tra xem token này có hợp lệ không bằng cách gọi hàm verifyToken từ UserService
+        const isLoggedIn = await UserService.verifyToken(token);
+
+        // Nếu token hợp lệ (người dùng đã đăng nhập)
+        if (isLoggedIn) {
+          // Thực hiện đăng xuất bằng cách gọi hàm logOut từ UserService
+          await UserService.logOut(token);
+          
+          // Trả về mã trạng thái 200 OK để cho biết đăng xuất đã thành công
+          res.sendStatus(200);
+        } else {
+          // Nếu token không hợp lệ (người dùng chưa đăng nhập), trả về mã trạng thái 401 Unauthorized
+          res.sendStatus(401);
+        }
       } catch (error) {
+        // Xử lý lỗi nếu có lỗi xảy ra trong quá trình đăng xuất hoặc kiểm tra token
         console.error(error);
-        res.sendStatus(500); // Gửi mã trạng thái 500 nếu có lỗi xảy ra trong quá trình đăng xuất
+        
+        // Trả về mã trạng thái 500 Internal Server Error để cho biết có sự cố xảy ra
+        res.sendStatus(500);
       }
     } else {
-      res.sendStatus(400); // Gửi mã trạng thái 400 nếu không có thông tin người dùng hợp lệ được cung cấp
+      // Nếu không có token trong request, trả về mã trạng thái 401 Unauthorized
+      res.sendStatus(401);
     }
-  }
+}
+
 
   //code handle sign up user
   static async signUp(req: Request, res: Response) {
-    // async lưu trữ không đồng
     const { username, email, password, confirmPassword } = req.body;
 
     if (username && email && password && confirmPassword) {
