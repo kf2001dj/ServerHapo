@@ -1,6 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
-
-@Entity({ name: "courses" })
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToMany,
+  JoinTable,
+} from "typeorm";
+import { Course_User } from "./Course_user";
+@Entity()
 export class Courses {
   @PrimaryGeneratedColumn()
   id: number;
@@ -52,4 +58,7 @@ export class Courses {
 
   @Column()
   logo_right: string;
+
+  @ManyToMany(() => Course_User, (courseUser) => courseUser.course_id)
+  course: Course_User[];
 }

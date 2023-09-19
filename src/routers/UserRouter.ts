@@ -17,5 +17,6 @@ userRouter.get(
 );
 
 userRouter.post("/signout", UserController.signOut);
+userRouter.put("/update/:id", UserController.updateProfile);
 
 export default userRouter;

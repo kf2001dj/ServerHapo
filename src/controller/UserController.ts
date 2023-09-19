@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { UserService } from "../services/UserService";
+// import { User } from "src/entity/User";
+// import { getRepository } from "typeorm";
 
 export default class UserController {
   //code handle id
@@ -86,7 +88,7 @@ export default class UserController {
         if (isLoggedIn) {
           // Thực hiện đăng xuất bằng cách gọi hàm logOut từ UserService
           await UserService.logOut(token);
-          
+
           // Trả về mã trạng thái 200 OK để cho biết đăng xuất đã thành công
           res.sendStatus(200);
         } else {
@@ -96,7 +98,7 @@ export default class UserController {
       } catch (error) {
         // Xử lý lỗi nếu có lỗi xảy ra trong quá trình đăng xuất hoặc kiểm tra token
         console.error(error);
-        
+
         // Trả về mã trạng thái 500 Internal Server Error để cho biết có sự cố xảy ra
         res.sendStatus(500);
       }
@@ -104,8 +106,7 @@ export default class UserController {
       // Nếu không có token trong request, trả về mã trạng thái 401 Unauthorized
       res.sendStatus(401);
     }
-}
-
+  }
 
   //code handle sign up user
   static async signUp(req: Request, res: Response) {
@@ -133,4 +134,22 @@ export default class UserController {
       return res.status(400).json({ message: "Yêu cầu không hợp lệ" });
     }
   }
+  
+  //code handle update profile userid
+  static async updateProfile(req: Request, res: Response) {
+    const userId = req.params.id;
+    const userData = req.body;
+    try {
+      const updateProfile = await UserService.updateUser(userId, userData);
+      if (updateProfile) {
+        res.json({ message: "Cập nhật profile thành công !!!" });
+      } else {
+        res.status(404).json({ message: "Người dùng không tìm thấy ???" });
+      }
+    } catch (error) {
+      console.error("Lỗi cập nhật dữ liệu người dùng", error);
+      res.status(500).json({ error: "Lỗi cập nhật dữ liệu người dùng" });
+    }
+  }
+
 }
