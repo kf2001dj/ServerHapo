@@ -6,8 +6,8 @@ import {
   JoinTable,
 } from "typeorm";
 
-import { Course_User } from "./Course_user";
-
+// import { Course_User } from "./Course_user";
+import { Courses } from "./Course";
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -40,6 +40,7 @@ export class User {
   @Column()
   about: string;
 
-  @ManyToMany(() => Course_User, (courseUser) => courseUser.user_id)
-  user: Course_User[];
+  @ManyToMany(() => Courses)
+  @JoinTable()
+  course_id: Courses[];
 }
