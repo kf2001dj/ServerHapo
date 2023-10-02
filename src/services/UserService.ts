@@ -43,7 +43,7 @@ export class UserService {
         if (passwordMatch) {
           // Nếu mật khẩu khớp
           const token = jwt.sign({ username }, jwtSecretKey, {
-            expiresIn: "1h", // Tạo token với thời gian hết hạn là 1 giờ
+            expiresIn: "7d", //accset token 1 phút , 7d 7 ngày refreshToken,hoặc 1h
           });
           return token;
         } else {

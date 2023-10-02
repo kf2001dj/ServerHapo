@@ -21,7 +21,7 @@ export async function authMiddleware(
     return res.status(200).end();
   }
 
-  // Trích xuất mã thông báo xác thực từ tiêu đề yêu cầu 
+  // Trích xuất mã thông báo xác thực từ tiêu đề yêu cầu
   const token = req.headers.authorization
     ? req.headers.authorization.split(" ")[1]
     : null;
@@ -30,7 +30,6 @@ export async function authMiddleware(
   if (token) {
     try {
       const isLoggedIn = await UserService.verifyToken(token);
-
       // Nếu mã thông báo hợp lệ, cho phép yêu cầu tiếp tục
       if (isLoggedIn) {
         next();

@@ -36,6 +36,17 @@ export class Courses {
   @Column()
   logo: string;
 
-  @ManyToMany(() => User)
+  @ManyToMany(() => User, (user) => user.course_id)
+  @JoinTable({
+    name: "user_courses", // Tên của bảng liên kết (cần phải trùng với tên trong User Entity)
+    joinColumn: {
+      name: "course_id", // Tên cột của Courses
+      referencedColumnName: "id", // Tên cột liên kết đến Courses
+    },
+    inverseJoinColumn: {
+      name: "user_id", // Tên cột của User
+      referencedColumnName: "id", // Tên cột liên kết đến User
+    },
+  })
   user_id: User[];
 }
