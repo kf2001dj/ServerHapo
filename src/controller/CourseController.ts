@@ -69,14 +69,14 @@ export default class CourseController {
   }
 
   static async getUserCourses(req: Request, res: Response) {
-    const userId = parseInt(req.params.userId, 10); // Parse the userId from the URL parameter
+    const userId = parseInt(req.params.userId, 10);
 
     try {
       if (isNaN(userId) || userId <= 0) {
-        // Check for invalid userId
         throw new Error("Invalid userId");
       }
-      const courses = await CoursesService.getCourseImagesForUser(userId);
+
+      const courses = await CoursesService.getUserCourseInfo(userId);
 
       if (courses.length > 0) {
         res.json(courses);

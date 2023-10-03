@@ -1,4 +1,4 @@
-import { getRepository, FindOneOptions } from "typeorm";
+import { getRepository, FindOneOptions, Repository } from "typeorm";
 import { Courses } from "../entity/Course";
 import { User } from "../entity/User";
 
@@ -20,20 +20,6 @@ export class CoursesService {
     const course = await courseRepository.findOne(options);
     return course || null;
   }
-
-  // static async getUserToCourse(): Promise<UserToCourse[]> {
-  //   const userCourse = getRepository(UserToCourse);
-  //   return await userCourse.find();
-  // }
-
-  // static async getUserToCourseId(id: number): Promise<UserToCourse | null> {
-  //   const userCourseid = getRepository(UserToCourse);
-  //   const options: FindOneOptions<UserToCourse> = {
-  //     where: { id },
-  //   };
-  //   const userCourse = await userCourseid.findOne(options);
-  //   return userCourse || null;
-  // }
 
   //code handle add course id user id
   static async handleaddCourseToUser(
@@ -67,23 +53,25 @@ export class CoursesService {
     }
   }
 
-  static async getCourseImagesForUser(userId: number) {
-    if (isNaN(userId) || userId <= 0) {
-      throw new Error("userId không hợp lệ");
-    }
-    const userToCourseRepository = getRepository(UserToCourse);
-
+  static async getUserCourseInfo(userId: number) {
     try {
-      const courseImages = await userToCourseRepository.find({
-        where: { user: { id: userId } },
-        select: ["course"], // Replace with the actual column name for course images
-      });
+      const userToCourseRepository: Repository<UserToCourse> =
+        getRepository(UserToCourse);
 
-      const images = courseImages.map(
-        (userToCourse) => userToCourse.course.imageUrl
-      );
+      const result = await userToCourseRepository
+        .createQueryBuilder("UserToCourse")
+        .select([
+          "UserToCourse.id",
+          "course_id.id as id",
+          "course_id.imageUrl as imageUrl",
+          "course_id.txtname as txtname",
+        ])
+        .leftJoin("UserToCourse.user", "user_id")
+        .leftJoin("UserToCourse.course", "course_id")
+        .where("user_id.id = :userId", { userId })
+        .getRawMany();
 
-      return images;
+      return result;
     } catch (error) {
       throw error;
     }

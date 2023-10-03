@@ -8,7 +8,7 @@ courseRouter.get("/courses", CourseController.getAllCourses);
 
 courseRouter.get("/courses/:id", CourseController.getCourseById);
 
-courseRouter.get("/course-images/:userId", CourseController.getUserCourses);
+courseRouter.get("/userscourses/:userId", CourseController.getUserCourses);
 // courseRouter.get("/user-course/:id", CourseController.getUserToCourseId);
 
 courseRouter.post("/add", authMiddleware, CourseController.addCourseToUser);
