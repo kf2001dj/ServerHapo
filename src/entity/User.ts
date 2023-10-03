@@ -2,7 +2,8 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToMany,
+  JoinColumn,
+  ManyToOne,
   JoinTable,
 } from "typeorm";
 
@@ -40,17 +41,7 @@ export class User {
   @Column()
   about: string;
 
-  @ManyToMany(() => Courses, (course) => course.user_id)
-  @JoinTable({
-    name: "user_courses", // Tên của bảng liên kết
-    joinColumn: {
-      name: "user_id", // Tên cột của User
-      referencedColumnName: "id", // Tên cột liên kết đến User
-    },
-    inverseJoinColumn: {
-      name: "course_id", // Tên cột của Courses
-      referencedColumnName: "id", // Tên cột liên kết đến Courses
-    },
-  })
+  @ManyToOne(() => Courses, (course) => course.user_id)
+  @JoinTable()
   course_id: Courses[];
 }
