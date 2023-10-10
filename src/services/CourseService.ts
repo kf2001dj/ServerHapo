@@ -39,14 +39,56 @@ export class CoursesService {
         return false; // Thêm khoá học thất bại nếu không tìm thấy userId và courseId
       }
 
-      const userCourse = new UserToCourse();
-      userCourse.user = user;
-      userCourse.course = course;
+      const existingUserCourse = await getRepository(UserToCourse).findOne({
+        where: { user: user, course: course },
+      });
+      if (existingUserCourse) {
+        // console.log("Đã tồn tại");
+        return false;
+      } else {
+        const userCourse = new UserToCourse();
+        userCourse.user = user;
+        userCourse.course = course;
 
-      // Save the UserCourse entry
-      await getRepository(UserToCourse).save(userCourse);
+        // Save the UserCourse entry
+        await getRepository(UserToCourse).save(userCourse);
 
-      return true; // Thêm thành công
+        return true; // Thêm thành công
+      }
+    } catch (error) {
+      console.error(error);
+      return false; // Lỗi xử lý
+    }
+  }
+  //code handle delete Course User tương tự thêm khoá học
+  static async handleRemoveCourseFromUser(
+    userId: number,
+    courseId: number
+  ): Promise<boolean> {
+    const userRepository = getRepository(User);
+    const courseRepository = getRepository(Courses);
+
+    try {
+      const user = await userRepository.findOne({ where: { id: userId } });
+      const course = await courseRepository.findOne({
+        where: { id: courseId },
+      });
+
+      if (!user || !course) {
+        return false; // Người dùng hoặc khóa học không tồn tại
+      }
+
+      const existingUserCourse = await getRepository(UserToCourse).findOne({
+        where: { user: user, course: course },
+      });
+
+      if (existingUserCourse) {
+        // Xoá UserCourse entry
+        await getRepository(UserToCourse).remove(existingUserCourse);
+        return true; // Xoá thành công
+      } else {
+        return false; // Không tìm thấy UserCourse entry
+      }
     } catch (error) {
       console.error(error);
       return false; // Lỗi xử lý
