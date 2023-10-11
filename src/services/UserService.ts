@@ -125,11 +125,11 @@ export class UserService {
         const decodedToken: any = jwt.decode(token, { complete: true });
 
         // Tạo một token mới với thời gian sống rất ngắn, ví dụ: 1 giây
-        const newToken = jwt.sign(
-          { sub: decodedToken.payload.sub },
-          jwtSecretKey,
-          { expiresIn: "1" }
-        );
+        // const newToken = jwt.sign(
+        //   { sub: decodedToken.payload.sub },
+        //   jwtSecretKey,
+        //   { expiresIn: "1" }
+        // );
         // Trả về token mới (đã hết hạn), người dùng sẽ không thể sử dụng nó
         return Promise.resolve(true);
       } else {
@@ -145,7 +145,7 @@ export class UserService {
 
   static async updateUser(userId: string, userData: any): Promise<User | null> {
     const userRepository = getRepository(User);
-
+    console.log("2");
     try {
       const userIdnumber = parseInt(userId, 10);
       // Sử dụng find để tìm tất cả người dùng có id tương ứng (nên chỉ có 1 hoặc không có)
@@ -164,6 +164,7 @@ export class UserService {
         // Lưu thông tin người dùng đã cập nhật vào cơ sở dữ liệu
         const updatedUser = await userRepository.save(user);
         // Trả về thông tin người dùng đã cập nhật
+
         return updatedUser;
       } else {
         // Nếu không tìm thấy người dùng, trả về null

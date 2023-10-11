@@ -134,11 +134,13 @@ export default class UserController {
       return res.status(400).json({ message: "Yêu cầu không hợp lệ" });
     }
   }
-  
+
   //code handle update profile userid
   static async updateProfile(req: Request, res: Response) {
     const userId = req.params.id;
     const userData = req.body;
+    console.log("1");
+    console.log(userData.name); 
     try {
       const updateProfile = await UserService.updateUser(userId, userData);
       if (updateProfile) {
@@ -151,5 +153,4 @@ export default class UserController {
       res.status(500).json({ error: "Lỗi cập nhật dữ liệu người dùng" });
     }
   }
-
 }
