@@ -1,5 +1,8 @@
 import { getRepository, FindOneOptions, Repository } from "typeorm";
 import { Courses } from "../entity/Course";
+import { User } from "../entity/User";
+
+import { UserToCourse } from "../entity/UserToCourse";
 
 export class CoursesService {
   static async getAllCourses(): Promise<Courses[]> {
@@ -16,5 +19,103 @@ export class CoursesService {
 
     const course = await courseRepository.findOne(options);
     return course || null;
+  }
+
+  //code handle add course id user id
+  static async handleaddCourseToUser(
+    userId: number,
+    courseId: number
+  ): Promise<boolean> {
+    const userRepository = getRepository(User);
+    const courseRepository = getRepository(Courses);
+
+    try {
+      const user = await userRepository.findOne({ where: { id: userId } });
+      const course = await courseRepository.findOne({
+        where: { id: courseId },
+      });
+
+      if (!user || !course) {
+        return false; // Thêm khoá học thất bại nếu không tìm thấy userId và courseId
+      }
+
+      const existingUserCourse = await getRepository(UserToCourse).findOne({
+        where: { user: user, course: course },
+      });
+      if (existingUserCourse) {
+        // console.log("Đã tồn tại");
+        return false;
+      } else {
+        const userCourse = new UserToCourse();
+        userCourse.user = user;
+        userCourse.course = course;
+
+        // Save the UserCourse entry
+        await getRepository(UserToCourse).save(userCourse);
+
+        return true; // Thêm thành công
+      }
+    } catch (error) {
+      console.error(error);
+      return false; // Lỗi xử lý
+    }
+  }
+  //code handle delete Course User tương tự thêm khoá học
+  static async handleRemoveCourseFromUser(
+    userId: number,
+    courseId: number
+  ): Promise<boolean> {
+    const userRepository = getRepository(User);
+    const courseRepository = getRepository(Courses);
+
+    try {
+      const user = await userRepository.findOne({ where: { id: userId } });
+      const course = await courseRepository.findOne({
+        where: { id: courseId },
+      });
+
+      if (!user || !course) {
+        return false; // Người dùng hoặc khóa học không tồn tại
+      }
+
+      const existingUserCourse = await getRepository(UserToCourse).findOne({
+        where: { user: user, course: course },
+      });
+
+      if (existingUserCourse) {
+        // Xoá UserCourse entry
+        await getRepository(UserToCourse).remove(existingUserCourse);
+        return true; // Xoá thành công
+      } else {
+        return false; // Không tìm thấy UserCourse entry
+      }
+    } catch (error) {
+      console.error(error);
+      return false; // Lỗi xử lý
+    }
+  }
+
+  static async getUserCourseInfo(userId: number) {
+    try {
+      const userToCourseRepository: Repository<UserToCourse> =
+        getRepository(UserToCourse);
+
+      const result = await userToCourseRepository
+        .createQueryBuilder("UserToCourse")
+        .select([
+          "UserToCourse.id",
+          "course_id.id as id",
+          "course_id.imageUrl as imageUrl",
+          "course_id.txtname as txtname",
+        ])
+        .leftJoin("UserToCourse.user", "user_id")
+        .leftJoin("UserToCourse.course", "course_id")
+        .where("user_id.id = :userId", { userId })
+        .getRawMany();
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 }

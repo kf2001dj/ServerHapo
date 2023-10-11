@@ -3,6 +3,7 @@ import { connectDatabase } from "./datasource/DataCourse";
 import userRouter from "./routers/UserRouter";
 import bodyParser from "body-parser";
 import courseRouter from "./routers/CourseRouter";
+// import courseUserPr from "./routers/CourseUserPrRouter";
 
 const cors = require("cors");
 const app = express();
@@ -25,6 +26,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/all", courseRouter);
+
+// app.use("/profile", courseUserPr);
 
 connectDatabase()
   .then(() => {

@@ -1,11 +1,20 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  JoinColumn,
+  ManyToOne,
+  JoinTable,
+} from "typeorm";
 
-@Entity({ name: "users" })
+// import { Course_User } from "./Course_user";
+import { Courses } from "./Course";
+@Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: "image_url" })
+  @Column()
   imageUrl: string;
 
   @Column()
@@ -31,16 +40,8 @@ export class User {
 
   @Column()
   about: string;
-}
 
-@Entity({ name: "courses_users" })
-export class Courses_User {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
-  courses_id: string;
-
-  @Column()
-  user_id: string;
+  @ManyToOne(() => Courses, (course) => course.user_id)
+  @JoinTable()
+  course_id: Courses[];
 }

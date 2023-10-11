@@ -1,11 +1,20 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
-
-@Entity({ name: "courses" })
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToMany,
+  JoinTable,
+  ManyToOne,
+  JoinColumn,
+} from "typeorm";
+import { User } from "./User";
+// import { Course_User } from "./Course_user";
+@Entity()
 export class Courses {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: "image_url" })
+  @Column()
   imageUrl: string;
 
   @Column()
@@ -29,27 +38,7 @@ export class Courses {
   @Column()
   logo: string;
 
-  @Column()
-  logo_learners: string;
-
-  @Column()
-  logo_lessons: string;
-
-  @Column()
-  logo_times: string;
-
-  @Column()
-  logo_tags: string;
-
-  @Column()
-  logo_price: string;
-
-  @Column()
-  logo_searc: string;
-
-  @Column()
-  logo_left: string;
-
-  @Column()
-  logo_right: string;
+  @ManyToOne(() => User, (user) => user.course_id)
+  @JoinTable()
+  user_id: User[];
 }
